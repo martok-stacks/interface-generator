@@ -5,7 +5,7 @@ unit DocumentProcessor;
 interface
 
 uses
-  Classes, SysUtils, DOM;
+  Classes, SysUtils, DOM, dateutils;
 
 type
   TStringArray = array of String;
@@ -18,7 +18,6 @@ type
     procedure ProcessStruct(Struct: TDOMElement);
     procedure ProcessField(Field: TDOMElement);
   protected
-    procedure FatalError(Msg: String; Fmt: array of const);
 
     procedure ProcessVerbatim(Verbatim: TDOMElement);
     procedure ProcessConsts(Consts: TDOMElement);
@@ -66,6 +65,7 @@ type
     procedure EmitCallback(const name, return, params: string); virtual; abstract;
   public
     procedure Translate(const Doc: TXMLDocument);
+    class procedure FatalError(Msg: String; Fmt: array of const);
   end;
 
 function Implode(Str: TStringArray; Glue: String): string;
@@ -128,9 +128,9 @@ end;
 
 { TDocumentProcessor }
 
-procedure TDocumentProcessor.FatalError(Msg: String; Fmt: array of const);
+class procedure TDocumentProcessor.FatalError(Msg: String; Fmt: array of const);
 begin
-  WriteLn(Format(Msg, Fmt));
+  WriteLn(ErrOutput, Format(Msg, Fmt));
   halt(1);
 end;
 
@@ -384,6 +384,7 @@ procedure TDocumentProcessor.ProcessHeader(Header: TDOMElement);
 var
   i: integer;
 begin
+  PrintIndented(ConvertComment('inline', Format('GENERATED FILE, DO NOT EDIT! [Created %sZ]',[FormatDateTime('YYYY-MM-DD HH:NN:SS',LocalTimeToUniversal(Now))])));
   EmitModuleHeader(Header.AttribStrings[aHeaderModule]);
 
   for i:= 0 to Header.ChildNodes.Count-1 do

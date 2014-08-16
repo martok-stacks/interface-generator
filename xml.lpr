@@ -3,13 +3,14 @@ program xml;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, getopts,
   { you can add units after this }
   DOM, XMLRead, DocumentProcessor, DocProcessorFPC;
 
 var
   optInputFile: String;
   optOutputFile: String;
+  optLanguage: String;
 
 var
   domParser: TDOMParser;
@@ -17,38 +18,65 @@ var
   inp: TXMLInputSource;
   doc: TXMLDocument;
   dp: TDocumentProcessor;
+  ior: Word;
 begin
-  optInputFile:= ExtractFilePath(ParamStr(0)) + 'OpenPGPIntf.xml';
-  optOutputFile:= ExtractFilePath(ParamStr(0)) + 'OpenPGPIntf_gen.pas';
-  CloseFile(Output);
-  AssignFile(Output, optOutputFile);
-  Rewrite(Output);
+  while true do
+    case GetOpt('i:o:l:') of
+      EndOfOptions: break;
+      'i': optInputFile:= OptArg;
+      'o': optOutputFile:= OptArg;
+      'l': optLanguage:= OptArg;
+    end;
 
-  domParser:= TDOMParser.Create;
+  if (optLanguage = '') or (optInputFile='') or (optOutputFile='') then
+    TDocumentProcessor.FatalError('USAGE: %s -i InFile -o OutFile -l Language',[ExtractFileName(ParamStr(0))]);
+
+  if not FileExists(optInputFile) then
+    TDocumentProcessor.FatalError('Input File not found!',[]);
+
+  if optOutputFile <> '-' then begin
+    {$IOChecks off};
+    ior:= IOResult;
+    CloseFile(Output);
+    AssignFile(Output, optOutputFile);
+    Rewrite(Output);
+    {$IOChecks on}
+    ior:= IOResult;
+
+    if ior<>0 then
+      TDocumentProcessor.FatalError('Could not open output file, Error: %d',[ior]);
+  end;
+
+  case UpperCase(optLanguage) of
+    'FPC': dp:= TDocumentProcessorFPC.Create;
+  else
+    TDocumentProcessor.FatalError('Unsupported target language: %s',[optLanguage]);
+  end;
+
   try
-    domParser.Options.PreserveWhiteSpace := false;
-    domParser.Options.Namespaces := True;
-    fs:= TFileStream.Create(optInputFile, fmOpenRead);
+    domParser:= TDOMParser.Create;
     try
-      inp := TXMLInputSource.Create(fs);
+      domParser.Options.PreserveWhiteSpace := false;
+      domParser.Options.Namespaces := True;
+      fs:= TFileStream.Create(optInputFile, fmOpenRead);
       try
-        domParser.Parse(inp, doc);
-        if Assigned(doc) then begin
-          dp:= TDocumentProcessorFPC.Create;
-          try
+        inp := TXMLInputSource.Create(fs);
+        try
+          domParser.Parse(inp, doc);
+          if Assigned(doc) then begin
             dp.Translate(doc);
-          finally
-            FreeAndNil(dp);
           end;
+        finally
+          inp.Free;
         end;
       finally
-        inp.Free;
+        FreeAndNil(fs);
       end;
     finally
-      FreeAndNil(fs);
+      FreeAndNil(domParser);
     end;
   finally
-    FreeAndNil(domParser);
+    FreeAndNil(dp);
   end;
 end.
 

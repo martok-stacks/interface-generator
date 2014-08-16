@@ -29,6 +29,7 @@
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
+        <CommandLineParams Value="-i OpenPGPIntf.xml -o OpenPGPIntf_gen.pas -l FPC"/>
       </local>
     </RunParams>
     <Units Count="3">
