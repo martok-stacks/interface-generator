@@ -5,7 +5,8 @@ program xml;
 uses
   Classes, SysUtils, getopts,
   { you can add units after this }
-  DOM, XMLRead, DocumentProcessor, DocProcessorFPC;
+  DOM, XMLRead, DocumentProcessor,
+  DocProcessorFPC, DocProcessorCPP_XIntf;
 
 var
   optInputFile: String;
@@ -49,6 +50,8 @@ begin
 
   case UpperCase(optLanguage) of
     'FPC': dp:= TDocumentProcessorFPC.Create;
+    'CPP': TDocumentProcessor.FatalError('Please choose a C++ variant: CPP-XINTF',[]);
+    'CPP-XINTF': dp:= TDocumentProcessorCPP_XIntf.Create;
   else
     TDocumentProcessor.FatalError('Unsupported target language: %s',[optLanguage]);
   end;
