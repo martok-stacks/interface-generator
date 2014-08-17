@@ -86,11 +86,13 @@ begin
 
   try
     ReadXMLFile(doc, optInputFile);
-    if Assigned(doc) then begin
+    if Assigned(doc) then try
       ExpandIncludeStatements(doc.DocumentElement, ExtractFilePath(ExpandFileName(optInputFile)));
       if optDbgXML then
         WriteXMLFile(doc, optOutputFile + '.xml');
       dp.Translate(doc);
+    finally
+      FreeAndNil(doc);
     end;
   finally
     FreeAndNil(dp);
