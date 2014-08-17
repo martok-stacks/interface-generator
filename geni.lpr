@@ -17,7 +17,7 @@ var
 procedure ExpandIncludeStatements(const doc: TDOMElement; const BasePath: string);
 var
   fn: string;
-  rn: TDOMNode;
+  rn,t: TDOMNode;
   inc: TDOMElement;
 begin
   rn:= doc.FirstChild;
@@ -38,8 +38,14 @@ begin
         doc.RemoveChild(inc);
       end else
         ExpandIncludeStatements(rn as TDOMElement, BasePath);
+      rn:= rn.NextSibling;
+    end else begin
+      t:= rn.NextSibling;
+      // strip away non-nodes while we're at it
+      if rn.NodeType in [COMMENT_NODE] then
+        doc.RemoveChild(rn);
+      rn:= t;
     end;
-    rn:= rn.NextSibling;
   end;
 end;
 
