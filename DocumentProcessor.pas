@@ -174,6 +174,9 @@ begin
 
   for i:= 0 to Consts.ChildNodes.Count-1 do
     case Consts.ChildNodes[i].NodeName of
+      nComment: ProcessComment(Consts.ChildNodes[i] as TDOMElement);
+      nCommentDelayed: fDelayedComment:= Consts.ChildNodes[i] as TDOMElement;
+      nVerbatim: ProcessVerbatim(Consts.ChildNodes[i] as TDOMElement);
       nConst: ProcessConst(Consts.ChildNodes[i] as TDOMElement);
     else
       FatalError('Consts: Unknown node type %s',[Consts.ChildNodes[i].NodeName]);
@@ -352,6 +355,7 @@ begin
     case Types.ChildNodes[i].NodeName of
       nComment: ProcessComment(Types.ChildNodes[i] as TDOMElement);
       nCommentDelayed: fDelayedComment:= Types.ChildNodes[i] as TDOMElement;
+      nVerbatim: ProcessVerbatim(Types.ChildNodes[i] as TDOMElement);
       nAlias: ProcessTypeAlias(Types.ChildNodes[i] as TDOMElement);
       nEnum: ProcessEnum(Types.ChildNodes[i] as TDOMElement);
       nInterface: ProcessInterface(Types.ChildNodes[i] as TDOMElement);
