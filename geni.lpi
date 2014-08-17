@@ -36,11 +36,11 @@
       <Unit0>
         <Filename Value="geni.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="geni"/>
       </Unit0>
       <Unit1>
         <Filename Value="DocumentProcessor.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="DocumentProcessor"/>
       </Unit1>
       <Unit2>
         <Filename Value="DocProcessorFPC.pas"/>

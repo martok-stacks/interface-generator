@@ -5,28 +5,56 @@ program geni;
 uses
   Classes, SysUtils, getopts,
   { you can add units after this }
-  DOM, XMLRead, DocumentProcessor,
+  DOM, XMLRead, XMLWrite, DocumentProcessor,
   DocProcessorFPC, DocProcessorCPP_XIntf;
 
 var
   optInputFile: String;
   optOutputFile: String;
   optLanguage: String;
+  optDbgXML: boolean;
+
+procedure ExpandIncludeStatements(const doc: TDOMElement; const BasePath: string);
+var
+  fn: string;
+  rn: TDOMNode;
+  inc: TDOMElement;
+begin
+  rn:= doc.FirstChild;
+  while Assigned(rn) do begin
+    if rn.NodeType = ELEMENT_NODE then begin
+      if rn.NodeName='include' then begin
+        inc:= rn as TDOMElement;
+        fn:= inc.AttribStrings['path'];
+        fn:= ExpandFileName(ConcatPaths([BasePath, fn]));
+        ReadXMLFragment(inc, fn);
+        ExpandIncludeStatements(inc, ExtractFilePath(fn));
+        // move included nodes to where the include was
+        while assigned(inc.FirstChild) do
+          doc.InsertBefore(inc.FirstChild, inc);
+        // note new work pos
+        rn:= inc.PreviousSibling;
+        // remove (now empty) include
+        doc.RemoveChild(inc);
+      end else
+        ExpandIncludeStatements(rn as TDOMElement, BasePath);
+    end;
+    rn:= rn.NextSibling;
+  end;
+end;
 
 var
-  domParser: TDOMParser;
-  fs: TFileStream;
-  inp: TXMLInputSource;
   doc: TXMLDocument;
   dp: TDocumentProcessor;
   ior: Word;
 begin
   while true do
-    case GetOpt('i:o:l:') of
+    case GetOpt('i:o:l:d') of
       EndOfOptions: break;
       'i': optInputFile:= OptArg;
       'o': optOutputFile:= OptArg;
       'l': optLanguage:= OptArg;
+      'd': optDbgXML:= true;
     end;
 
   if (optLanguage = '') or (optInputFile='') or (optOutputFile='') then
@@ -57,26 +85,12 @@ begin
   end;
 
   try
-    domParser:= TDOMParser.Create;
-    try
-      domParser.Options.PreserveWhiteSpace := false;
-      domParser.Options.Namespaces := True;
-      fs:= TFileStream.Create(optInputFile, fmOpenRead);
-      try
-        inp := TXMLInputSource.Create(fs);
-        try
-          domParser.Parse(inp, doc);
-          if Assigned(doc) then begin
-            dp.Translate(doc);
-          end;
-        finally
-          inp.Free;
-        end;
-      finally
-        FreeAndNil(fs);
-      end;
-    finally
-      FreeAndNil(domParser);
+    ReadXMLFile(doc, optInputFile);
+    if Assigned(doc) then begin
+      ExpandIncludeStatements(doc.DocumentElement, ExtractFilePath(ExpandFileName(optInputFile)));
+      if optDbgXML then
+        WriteXMLFile(doc, optOutputFile + '.xml');
+      dp.Translate(doc);
     end;
   finally
     FreeAndNil(dp);
