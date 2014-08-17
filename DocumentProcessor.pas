@@ -120,6 +120,8 @@ var
   i: integer;
 begin
   Result:= '';
+  if Length(Str) = 0 then
+    exit;
   for i:= 0 to high(Str)-1 do
     Result:= Result + Str[i] + Glue;
   Result:= Result + Str[high(Str)];
