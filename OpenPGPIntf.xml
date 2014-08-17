@@ -7,6 +7,7 @@
     <constants>
       <const name="OPENPGP_VERSION_NUM"><v type="hex">0000</v></const>
       <const name="OPENPGP_VERSION_STR"><v type="string">0.0-alpha</v></const>
+      <const name="OPENPGP_ERROR_IO_TYPED_NONSEEKABLE"><v type="hex" cast="OpenPGPResult">80020101</v></const>
     </constants>
     <types>
       <comment style="inline">Basic Types</comment>

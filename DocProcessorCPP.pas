@@ -21,7 +21,7 @@ type
     procedure EmitConstBlockEnd; override;
     procedure EmitTypeBlockBegin; override;
     procedure EmitTypeBlockEnd; override;
-    function ConvertLiteralType(const TypeSpec, Value: string): string; override;
+    function ConvertLiteralType(const TypeSpec, ExplicitCast, Value: string): string; override;
     function ConvertComment(const style, Value: string): string; override;
     procedure EmitConstDef(Name, Value: string); override;
     procedure EmitTypeAlias(NewName, OldName: string); override;
@@ -86,14 +86,16 @@ begin
   PrintIndented('');
 end;
 
-function TDocumentProcessorCPP.ConvertLiteralType(const TypeSpec, Value: string): string;
+function TDocumentProcessorCPP.ConvertLiteralType(const TypeSpec, ExplicitCast, Value: string): string;
 begin
   case TypeSpec of
     'hex': Result:= '0x' + Value;
     'string': Result:= AnsiQuotedStr(Value, '"');
   else
-    Result:=inherited ConvertLiteralType(TypeSpec, Value);
+    Result:= inherited;
   end;
+  if ExplicitCast > '' then
+    Result:= '('+ExplicitCast+')'+Result;
 end;
 
 function TDocumentProcessorCPP.ConvertComment(const style, Value: string): string;

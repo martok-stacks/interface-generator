@@ -58,7 +58,7 @@ type
     procedure EmitStructBegin(Name: string); virtual; abstract;
     procedure EmitStructEnd(Name: string); virtual; abstract;
     procedure EmitStructField(const name, ftype: string); virtual; abstract;
-    function ConvertLiteralType(const TypeSpec, Value: string): string; virtual;
+    function ConvertLiteralType(const TypeSpec, {%H-}ExplicitCast, Value: string): string; virtual;
     function ConvertType(const aType: string): String; virtual;
     function ConvertComment(const style, Value: string): string; virtual; abstract;
     function ConvertParam(const name, ptype, attrib: string; More: boolean): string; virtual; abstract;
@@ -84,6 +84,7 @@ const
   nTypes                           = 'types';
   nValue                           = 'v';
   aValueType                       = 'type';
+  aValueCast                       = 'cast';
   nComment                         = 'comment';
   aCommentStyle                    = 'style';
   nCommentDelayed                  = 'comto';
@@ -145,9 +146,9 @@ begin
 
   if item.FirstChild.NodeName = nValue then begin
     v:= item.FirstChild as TDOMElement;
-    Result:= ConvertLiteralType(v.AttribStrings[aValueType], v.TextContent);
+    Result:= ConvertLiteralType(v.AttribStrings[aValueType], ConvertType(v.AttribStrings[aValueCast]), v.TextContent);
   end else
-    Result:= ConvertLiteralType('', item.TextContent);
+    Result:= ConvertLiteralType('', '', item.TextContent);
 end;
 
 procedure TDocumentProcessor.ProcessVerbatim(Verbatim: TDOMElement);
@@ -469,7 +470,7 @@ begin
   end;
 end;
 
-function TDocumentProcessor.ConvertLiteralType(const TypeSpec, Value: string): string;
+function TDocumentProcessor.ConvertLiteralType(const TypeSpec, ExplicitCast, Value: string): string;
 begin
   if TypeSpec = '' then
     Result:= Value
