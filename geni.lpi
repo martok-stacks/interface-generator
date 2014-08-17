@@ -45,6 +45,7 @@
       <Unit2>
         <Filename Value="DocProcessorFPC.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="DocProcessorFPC"/>
       </Unit2>
     </Units>
   </ProjectOptions>

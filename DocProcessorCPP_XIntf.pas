@@ -10,6 +10,7 @@ uses
 type
   TDocumentProcessorCPP_XIntf = class(TDocumentProcessorCPP)
   protected
+    procedure EmitInterfaceForward(Name: string); override;
     procedure EmitInterfaceBegin(Name: string; GUID: TGuid; Parents: TStringArray); override;
     procedure EmitInterfaceEnd; override;
     procedure EmitInterfaceMethod(const name, return, params: string); override;
@@ -18,6 +19,11 @@ type
 implementation
 
 { TDocumentProcessorCPP_XIntf }
+
+procedure TDocumentProcessorCPP_XIntf.EmitInterfaceForward(Name: string);
+begin
+  PrintIndented(format('%s = interface;',[Name]));
+end;
 
 procedure TDocumentProcessorCPP_XIntf.EmitInterfaceBegin(Name: string; GUID: TGuid; Parents: TStringArray);
 var

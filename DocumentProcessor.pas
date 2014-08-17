@@ -52,6 +52,7 @@ type
     procedure EmitEnumBegin(Name: string; BaseSize: integer); virtual; abstract;
     procedure EmitEnumEnd; virtual; abstract;
     procedure EmitEnumItem(Name: string; PadName: integer; Value: string; More: boolean); virtual; abstract;
+    procedure EmitInterfaceForward(Name: string); virtual; abstract;
     procedure EmitInterfaceBegin(Name: string; GUID: TGuid; Parents: TStringArray); virtual; abstract;
     procedure EmitInterfaceEnd; virtual; abstract;
     procedure EmitInterfaceMethod(const name, return, params: string); virtual; abstract;
@@ -296,6 +297,13 @@ var
   extends: TDOMNodeList;
   parents: TStringArray;
 begin
+  // forward declaration
+  if (Intf.AttribStrings[aInterfaceGUID]='') and
+     (Intf.ChildNodes.Count = 0) then begin
+    EmitInterfaceForward(Intf.AttribStrings[aInterfaceName]);
+    Exit;
+  end;
+
   extends:= Intf.GetElementsByTagName(nExtends);
   if Assigned(extends) then begin
     SetLength(parents, extends.Count);
@@ -404,6 +412,7 @@ begin
 
   for i:= 0 to Declarations.ChildNodes.Count-1 do
     case Declarations.ChildNodes[i].NodeName of
+      nVerbatim: ProcessVerbatim(Declarations.ChildNodes[i] as TDOMElement);
       nConstants: ProcessConsts(Declarations.ChildNodes[i] as TDOMElement);
       nTypes: ProcessTypes(Declarations.ChildNodes[i] as TDOMElement);
     else

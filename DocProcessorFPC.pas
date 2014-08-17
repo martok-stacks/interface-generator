@@ -26,6 +26,7 @@ type
     procedure EmitEnumBegin(Name: string; BaseSize: integer); override;
     procedure EmitEnumEnd; override;
     procedure EmitEnumItem(Name: string; PadName: integer; Value: string; More: boolean); override;
+    procedure EmitInterfaceForward(Name: string); override;
     procedure EmitInterfaceBegin(Name: string; GUID: TGuid; Parents: TStringArray); override;
     procedure EmitInterfaceEnd; override;
     procedure EmitInterfaceMethod(const name, return, params: string); override;
@@ -141,6 +142,11 @@ begin
   if More then
     s:= s + ',';
   PrintIndented(s);
+end;
+
+procedure TDocumentProcessorFPC.EmitInterfaceForward(Name: string);
+begin
+  PrintIndented(format('%s = interface;',[Name]));
 end;
 
 procedure TDocumentProcessorFPC.EmitInterfaceBegin(Name: string; GUID: TGuid; Parents: TStringArray);
