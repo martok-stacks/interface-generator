@@ -23,11 +23,11 @@ type
     procedure EmitTypeBlockEnd; override;
     function ConvertLiteralType(const TypeSpec, ExplicitCast, Value: string): string; override;
     function ConvertComment(const style, Value: string): string; override;
-    procedure EmitConstDef(Name, Value: string); override;
+    procedure EmitConstDef(Name: string; PadName: integer; Value: string); override;
     procedure EmitTypeAlias(NewName, OldName: string); override;
     procedure EmitEnumBegin(Name: string; BaseSize: integer); override;
     procedure EmitEnumEnd; override;
-    procedure EmitEnumItem(Name, Value: string; More: boolean); override;
+    procedure EmitEnumItem(Name: string; PadName: integer; Value: string; More: boolean); override;
     function ConvertParam(const name, ptype, attrib: string; More: boolean): string; override;
     procedure EmitCallback(const name, return, params: string); override;
     procedure EmitStructBegin({%H-}Name: string); override;
@@ -107,9 +107,9 @@ begin
   end;
 end;
 
-procedure TDocumentProcessorCPP.EmitConstDef(Name, Value: string);
+procedure TDocumentProcessorCPP.EmitConstDef(Name: string; PadName: integer; Value: string);
 begin
-  PrintIndented('#define ' + Name + ' ' + Value);
+  PrintIndented('#define ' + PadString(Name, ' ', PadName) + ' ' + Value);
 end;
 
 procedure TDocumentProcessorCPP.EmitTypeAlias(NewName, OldName: string);
@@ -136,13 +136,13 @@ begin
   PrintIndented('};');
 end;
 
-procedure TDocumentProcessorCPP.EmitEnumItem(Name, Value: string; More: boolean);
+procedure TDocumentProcessorCPP.EmitEnumItem(Name: string; PadName: integer; Value: string; More: boolean);
 var
   s: string;
 begin
   s:= Name;
   if Value > '' then
-    s:= s + ' = ' + Value;
+    s:= PadString(s,' ', PadName) + ' = ' + Value;
   if More then
     s:= s + ',';
   PrintIndented(s);

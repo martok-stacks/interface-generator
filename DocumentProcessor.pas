@@ -21,12 +21,12 @@ type
 
     procedure ProcessVerbatim(Verbatim: TDOMElement);
     procedure ProcessConsts(Consts: TDOMElement);
-    procedure ProcessConst(Constd: TDOMElement);
+    procedure ProcessConst(Constd: TDOMElement; PadTo: integer);
     function ContentToValue(item: TDOMElement): string;
     procedure ProcessComment(Comment: TDOMElement);
     procedure ProcessTypeAlias(TypeAlias: TDOMElement);
     procedure ProcessEnum(Enum: TDOMElement);
-    procedure ProcessEnumItem(Item: TDOMElement; More: boolean);
+    procedure ProcessEnumItem(Item: TDOMElement; PadTo: integer; More: boolean);
     procedure ProcessInterface(Intf: TDOMElement);
     procedure ProcessMethod(Method: TDOMElement);
     function ConvertParam(Param: TDOMElement; More: boolean): string;
@@ -47,11 +47,11 @@ type
     procedure EmitConstBlockEnd; virtual; abstract;
     procedure EmitTypeBlockBegin; virtual; abstract;
     procedure EmitTypeBlockEnd; virtual; abstract;
-    procedure EmitConstDef(Name, Value: string); virtual; abstract;
+    procedure EmitConstDef(Name: string; PadName: integer; Value: string); virtual; abstract;
     procedure EmitTypeAlias(NewName, OldName: string); virtual; abstract;
     procedure EmitEnumBegin(Name: string; BaseSize: integer); virtual; abstract;
     procedure EmitEnumEnd; virtual; abstract;
-    procedure EmitEnumItem(Name, Value: string; More: boolean); virtual; abstract;
+    procedure EmitEnumItem(Name: string; PadName: integer; Value: string; More: boolean); virtual; abstract;
     procedure EmitInterfaceBegin(Name: string; GUID: TGuid; Parents: TStringArray); virtual; abstract;
     procedure EmitInterfaceEnd; virtual; abstract;
     procedure EmitInterfaceMethod(const name, return, params: string); virtual; abstract;
@@ -69,6 +69,7 @@ type
   end;
 
 function Implode(Str: TStringArray; Glue: String): string;
+function PadString(Str: string; Pad: Char; Len: integer): string;
 
 implementation
 
@@ -128,6 +129,11 @@ begin
   Result:= Result + Str[high(Str)];
 end;
 
+function PadString(Str: string; Pad: Char; Len: integer): string;
+begin
+  Result:= Str + StringOfChar(Pad, Len - Length(Str));
+end;
+
 
 { TDocumentProcessor }
 
@@ -157,28 +163,38 @@ begin
     PrintIndented(Verbatim.TextContent);
 end;
 
-procedure TDocumentProcessor.ProcessConst(Constd: TDOMElement);
+procedure TDocumentProcessor.ProcessConst(Constd: TDOMElement; PadTo: integer);
 var
   name,val: string;
 begin
   name:= Constd.AttribStrings[aConstName];
   val:= ContentToValue(Constd);
-  EmitConstDef(name, val);
+  EmitConstDef(name, PadTo, val);
 end;
 
 procedure TDocumentProcessor.ProcessConsts(Consts: TDOMElement);
 var
-  i: integer;
+  i,ln,k: integer;
 begin
   EmitConstBlockBegin;
   IndentMore;
+
+  ln:= 0;
+  for i:= 0 to Consts.ChildNodes.Count-1 do
+    if Consts.ChildNodes[i].NodeName = nConst then begin
+      k:= Length((Consts.ChildNodes[i] as TDOMElement).AttribStrings[aConstName]);
+      if ln < k then
+        ln:= k;
+    end;
+
+  inc(ln, 4);
 
   for i:= 0 to Consts.ChildNodes.Count-1 do
     case Consts.ChildNodes[i].NodeName of
       nComment: ProcessComment(Consts.ChildNodes[i] as TDOMElement);
       nCommentDelayed: fDelayedComment:= Consts.ChildNodes[i] as TDOMElement;
       nVerbatim: ProcessVerbatim(Consts.ChildNodes[i] as TDOMElement);
-      nConst: ProcessConst(Consts.ChildNodes[i] as TDOMElement);
+      nConst: ProcessConst(Consts.ChildNodes[i] as TDOMElement, ln);
     else
       FatalError('Consts: Unknown node type %s',[Consts.ChildNodes[i].NodeName]);
     end;
@@ -207,25 +223,35 @@ begin
   EmitTypeAlias(TypeAlias.AttribStrings[aAliasName], ConvertType(TypeAlias.AttribStrings[aAliasType]));
 end;
 
-procedure TDocumentProcessor.ProcessEnumItem(Item: TDOMElement; More: boolean);
+procedure TDocumentProcessor.ProcessEnumItem(Item: TDOMElement; PadTo: integer; More: boolean);
 var
   name,val: string;
 begin
   name:= Item.AttribStrings[aItemName];
   val:= ContentToValue(Item);
-  EmitEnumItem(name, val, More);
+  EmitEnumItem(name, PadTo, val, More);
 end;
 
 procedure TDocumentProcessor.ProcessEnum(Enum: TDOMElement);
 var
-  i: integer;
+  i, ln, k: integer;
 begin
   EmitEnumBegin(Enum.AttribStrings[aEnumName], StrToIntDef(Enum.AttribStrings[aEnumSize], 4));
   IndentMore;
 
+  ln:= 0;
+  for i:= 0 to Enum.ChildNodes.Count-1 do
+    if Enum.ChildNodes[i].NodeName = nItem then begin
+      k:= Length((Enum.ChildNodes[i] as TDOMElement).AttribStrings[aItemName]);
+      if ln < k then
+        ln:= k;
+    end;
+
+  inc(ln, 4);
+
   for i:= 0 to Enum.ChildNodes.Count-1 do
     case Enum.ChildNodes[i].NodeName of
-      nItem: ProcessEnumItem(Enum.ChildNodes[i] as TDOMElement, i < Enum.ChildNodes.Count-1);
+      nItem: ProcessEnumItem(Enum.ChildNodes[i] as TDOMElement, ln, i < Enum.ChildNodes.Count-1);
       nCommentDelayed: fDelayedComment:= Enum.ChildNodes[i] as TDOMElement;
     else
       FatalError('Enum: Unknown node type %s',[Enum.ChildNodes[i].NodeName]);
