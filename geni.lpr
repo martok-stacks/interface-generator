@@ -1,4 +1,4 @@
-program xml;
+program geni;
 
 {$mode objfpc}{$H+}
 

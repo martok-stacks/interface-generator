@@ -10,7 +10,7 @@
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="xml"/>
+      <Title Value="geni"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -34,18 +34,17 @@
     </RunParams>
     <Units Count="3">
       <Unit0>
-        <Filename Value="xml.lpr"/>
+        <Filename Value="geni.lpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="geni"/>
       </Unit0>
       <Unit1>
         <Filename Value="DocumentProcessor.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="DocumentProcessor"/>
       </Unit1>
       <Unit2>
         <Filename Value="DocProcessorFPC.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="DocProcessorFPC"/>
       </Unit2>
     </Units>
   </ProjectOptions>
@@ -53,7 +52,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="xml"/>
+      <Filename Value="geni"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
