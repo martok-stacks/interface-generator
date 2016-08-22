@@ -189,6 +189,7 @@ begin
     '':;
     'out': Result:= 'out ';
     'const': Result:= 'const ';
+    'constref': Result:= 'constref ';
     'var': Result:= 'var ';
   else
     FatalError('Unkown method attribute: %s',[attrib]);

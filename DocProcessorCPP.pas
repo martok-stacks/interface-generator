@@ -157,6 +157,7 @@ begin
     '': t:= ptype;
     'out': t:= ptype + ' *';
     'const': t:= 'const '+ ptype;
+    'constref': t:= 'const *'+ ptype;
     'var': t:= ptype + ' *';
   else
     FatalError('Target: Unkown method attribute: %s',[attrib]);
